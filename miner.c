@@ -4,7 +4,6 @@
 #include <string.h>
 #include <stdatomic.h>
 #include <stdint.h>
-#include <pthread.h>
 
 extern bc_chain g_chain;
 extern atomic_int g_mining;
@@ -61,7 +60,7 @@ static void *miner_thread(void *arg) {
 }
 
 void miner_start(uint32_t miner_idx) {
-    static pthread_t handle;
+    static platform_handle_t handle;
     atomic_store(&g_mining, 1);
-    platform_thread_start((void**)&handle, miner_thread, (void*)(uintptr_t)miner_idx);
+    platform_thread_start(&handle, miner_thread, (void*)(uintptr_t)miner_idx);
 }
