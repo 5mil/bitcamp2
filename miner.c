@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdatomic.h>
 #include <stdint.h>
+#include <pthread.h>
 
 extern bc_chain g_chain;
 extern atomic_int g_mining;
