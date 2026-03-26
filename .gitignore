@@ -1,0 +1,21 @@
+# Build artifacts
+*.o
+*.a
+*.so
+*.dylib
+*.exe
+bitcamp
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Deps
+ncurses/
