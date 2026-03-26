@@ -1,13 +1,11 @@
 #include "platform.h"
-#include <pthread.h>
 #include <time.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdarg.h>
 
-int platform_thread_start(void **handle, platform_thread_fn fn, void *arg) {
-    pthread_t *t = (pthread_t *)handle;
-    return pthread_create(t, NULL, fn, arg);
+int platform_thread_start(platform_handle_t *handle, platform_thread_fn fn, void *arg) {
+    return pthread_create(handle, NULL, fn, arg);
 }
 
 void platform_sleep_ms(uint32_t ms) {
