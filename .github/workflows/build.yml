@@ -1,5 +1,5 @@
 name: Build and Release Bitcamp
-FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true
+
 
 on:
   push:
