@@ -46,7 +46,7 @@ jobs:
           ls -lh bitcamp* || true
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
           path: ${{ matrix.artifact }}
@@ -57,7 +57,7 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v3
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
