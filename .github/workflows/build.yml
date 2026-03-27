@@ -57,6 +57,9 @@ jobs:
 
   build-windows:
     name: Build on Windows (MSYS2)
+    env:
+    CFLAGS: "-Wall -Wextra -O2 -std=c11 -pthread -I/mingw64/include"
+    LDFLAGS: "-lpthread -lncurses -lm -L/mingw64/lib"
     runs-on: windows-latest
     steps:
       - name: Checkout repository
@@ -72,6 +75,7 @@ jobs:
             mingw-w64-x86_64-ncurses
 
       - name: Build with MinGW
+  
         shell: msys2 {0}
         run: |
           mingw32-make
