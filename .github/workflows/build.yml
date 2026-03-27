@@ -1,73 +1,83 @@
-name: Build and Release Bitcamp
-
+name: Bitcamp CI
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches: [ main ]
   pull_request:
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        include:
-          - os: ubuntu-latest
-            artifact: bitcamp
-            artifact_name: bitcamp-linux-x64
-          - os: macos-latest
-            artifact: bitcamp
-            artifact_name: bitcamp-macos-x64
-          - os: windows-latest
-            artifact: bitcamp.exe
-            artifact_name: bitcamp-windows-x64.exe
+  build-linux:
+    name: Build on Ubuntu
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    steps: - uses: actions/checkout@v3
-
-      - name: Install dependencies (Ubuntu)
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential libncurses5-dev
-       - name: Install dependencies 
-        if: runner.os == 'windows-latest'
+      - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential libncurses5-dev
 
-      - name: Install dependencies (macOS)
-        if: runner.os == 'macOS'
+      - name: Build
         run: |
+          make
+
+      - name: Upload Linux binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: bitcamp-linux-x64
+          path: ./bitcamp
+
+  build-macos:
+    name: Build on macOS
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          brew update
           brew install ncurses
 
       - name: Build
-        run: make clean && make
-
-      - name: Test binary exists
+        env:
+          LDFLAGS: "-L/usr/local/opt/ncurses/lib"
+          CPPFLAGS: "-I/usr/local/opt/ncurses/include"
         run: |
-          ls -lh bitcamp* || true
+          make
 
-      - name: Upload artifact
+      - name: Upload macOS binary
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.artifact_name }}
-          path: ${{ matrix.artifact }}
-          if-no-files-found: warn
+          name: bitcamp-macos-x64
+          path: ./bitcamp
 
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
+  build-windows:
+    name: Build on Windows (MSYS2)
+    runs-on: windows-latest
     steps:
-      - uses: actions/download-artifact@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
+      - name: Set up MSYS2
+        uses: msys2/setup-msys2@v2
         with:
-          files: |
-            bitcamp-linux-x64/bitcamp
-            bitcamp-macos-x64/bitcamp
-            bitcamp-windows-x64/bitcamp.exe
+          update: true
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-make
+            mingw-w64-x86_64-ncurses
+
+      - name: Build with MinGW
+        shell: msys2 {0}
+        run: |
+          mingw32-make
+
+      - name: Upload Windows binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: bitcamp-windows-x64
+          path: ./bitcamp.exe
