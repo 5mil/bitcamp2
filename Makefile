@@ -16,8 +16,8 @@ ifeq ($(OS),Windows_NT)
     CFLAGS  += -I/mingw64/include -pthread
     LDFLAGS += -L/mingw64/lib
 
-    # Link raylib + glfw3 + win32 libs, allow dynamic linking for __imp_glfw*
-    LDLIBS  += -lraylib -lglfw3 -lopengl32 -lgdi32 -lwinmm -lcomdlg32 -lole32 -lpthread
+    # IMPORTANT: rely on raylib's own dependency chain (no -lglfw3 here)
+    LDLIBS  += -lraylib -lopengl32 -lgdi32 -lwinmm -lcomdlg32 -lole32 -lpthread
 else
     # POSIX (Linux/macOS) with system raylib
     CFLAGS  += -pthread
