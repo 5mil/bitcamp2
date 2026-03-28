@@ -5,6 +5,11 @@
 #include <string.h>
 #include <stdio.h>
 #include <pthread.h>
+#ifdef _WIN32
+#include <curses.h>     // PDCurses on Windows
+#else
+#include <ncurses.h>    // other platforms (if you add them later)
+#endif
 
 bc_chain g_chain;
 atomic_int g_mining = 0;
