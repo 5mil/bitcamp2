@@ -8,22 +8,19 @@ LDLIBS  += -lm
 
 # Platform-specific configurations
 ifeq ($(OS),Windows_NT)
-    # Windows + PDCurses (via MSYS2)
-    # Add -pthread for the miner thread
-    CFLAGS  += -I/mingw64/include -I/mingw64/include/pdcurses -pthread
+    # Windows + Raylib
+    CFLAGS  += -I/mingw64/include -pthread
     
-    # Force fully static executable so it runs anywhere without MinGW DLLs
+    # Force fully static executable
     LDFLAGS += -static -static-libgcc -static-libstdc++
     
-    # 1. Link pdcurses and pthread statically
-    # 2. Switch back to dynamic linking for the core Windows system libraries 
-    #    (GDI32 for graphics/text, ComDlg32 for fonts, WinMM for sounds)
-    LDLIBS  += -Wl,-Bstatic -lpdcurses -lpthread \
-               -Wl,-Bdynamic -lgdi32 -lcomdlg32 -lwinmm
+    # Link Raylib and Windows system libraries statically
+    LDLIBS  += -Wl,-Bstatic -lraylib -lpthread \
+               -Wl,-Bdynamic -lgdi32 -lwinmm -lopengl32 -lcomdlg32 -lole32
 else
-    # POSIX (Linux/macOS) with ncurses + pthread
+    # POSIX (Linux/macOS) fallback
     CFLAGS  += -pthread
-    LDLIBS  += -lpthread -lncurses
+    LDLIBS  += -lpthread -lm
 endif
 
 # Object files
