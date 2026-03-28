@@ -1,4 +1,4 @@
-name: Bitcamp CI
+name: Bitcamp Windows CI (PDCurses)
 
 on:
   push:
@@ -8,55 +8,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-linux:
-    name: Build on Ubuntu
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential libncurses5-dev
-
-      - name: Build
-        run: |
-          make
-
-      - name: Upload Linux binary
-        uses: actions/upload-artifact@v4
-        with:
-          name: bitcamp-linux-x64
-          path: ./bitcamp
-
-  build-macos:
-    name: Build on macOS
-    runs-on: macos-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install dependencies
-        run: |
-          brew update
-          brew install ncurses
-
-      - name: Build
-        env:
-          LDFLAGS: "-L/usr/local/opt/ncurses/lib"
-          CPPFLAGS: "-I/usr/local/opt/ncurses/include"
-        run: |
-          make
-
-      - name: Upload macOS binary
-        uses: actions/upload-artifact@v4
-        with:
-          name: bitcamp-macos-x64
-          path: ./bitcamp
-
-    build-windows:
-    name: Build on Windows (MSYS2 / MinGW64)
+  build-windows:
+    name: Build on Windows with PDCurses
     runs-on: windows-latest
 
     steps:
@@ -66,17 +19,24 @@ jobs:
       - name: Set up MSYS2 (MINGW64)
         uses: msys2/setup-msys2@v2
         with:
-          update: true
           msystem: MINGW64
+          update: true
           install: >-
             base-devel
             mingw-w64-x86_64-toolchain
-            mingw-w64-x86_64-ncurses
+            mingw-w64-x86_64-pdcurses
 
-      - name: Build with MinGW64
+      - name: Show toolchain info (debug)
+        shell: msys2 {0}
+        run: |
+          gcc --version
+          echo "Include search paths:"
+          gcc -xc -E -v NUL 2>&1 | sed -n '/#include <...> search starts here:/,/End of search list./p'
+
+      - name: Build with MinGW64 + PDCurses
         shell: msys2 {0}
         env:
-          CFLAGS: "-I/mingw64/include -I/mingw64/include/ncurses -I/mingw64/include/ncursesw"
+          CFLAGS: "-I/mingw64/include -I/mingw64/include/pdcurses"
           LDFLAGS: "-L/mingw64/lib"
         run: |
           make
