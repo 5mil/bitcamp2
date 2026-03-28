@@ -1,6 +1,5 @@
 #include "bitcamp.h"
 #include "platform.h"
-#include <ncurses.h>
 #include <stdatomic.h>
 #include <string.h>
 #include <stdio.h>
