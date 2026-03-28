@@ -11,10 +11,7 @@ ifeq ($(OS),Windows_NT)
     # Windows + PDCurses (via MSYS2 mingw-w64-x86_64-pdcurses)
     CFLAGS  += -I/mingw64/include -I/mingw64/include/pdcurses
     LDLIBS  += -lpdcurses
-else
-    # POSIX (Linux/macOS) with ncurses + pthread
-    CFLAGS  += -pthread
-    LDLIBS  += -lpthread -lncurses
+
 endif
 
 OBJS = bitcamp_core.o sha256.o sha256t.o platform.o miner.o ui.o
