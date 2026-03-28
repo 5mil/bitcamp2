@@ -9,14 +9,14 @@ LDLIBS  += -lm
 # Platform-specific configurations
 ifeq ($(OS),Windows_NT)
     # Windows + PDCurses (via MSYS2)
-    # Include headers
-    CFLAGS  += -I/mingw64/include -I/mingw64/include/pdcurses
+    # Add -pthread for the miner thread
+    CFLAGS  += -I/mingw64/include -I/mingw64/include/pdcurses -pthread
     
     # Force fully static executable so it runs anywhere without DLLs
     LDFLAGS += -static -static-libgcc -static-libstdc++
     
-    # Link pdcurses statically
-    LDLIBS  += -Wl,-Bstatic -lpdcurses
+    # Link pdcurses and pthread statically
+    LDLIBS  += -Wl,-Bstatic -lpdcurses -lpthread
 else
     # POSIX (Linux/macOS) with ncurses + pthread
     CFLAGS  += -pthread
