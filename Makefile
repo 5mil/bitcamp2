@@ -14,13 +14,12 @@ OBJS = $(SRCS:.c=.o)
 ifeq ($(OS),Windows_NT)
     # MSYS2 MinGW64 + raylib
     CFLAGS  += -I/mingw64/include -pthread
-    LDFLAGS += -L/mingw64/lib -static -static-libgcc -static-libstdc++
+    LDFLAGS += -L/mingw64/lib
 
-    # raylib already depends on glfw; link both and required Win32 libs
-    LDLIBS  += -Wl,-Bstatic -lraylib -lglfw3 -lpthread \
-               -Wl,-Bdynamic -lopengl32 -lgdi32 -lwinmm -lcomdlg32 -lole32
+    # Link raylib + glfw3 + win32 libs, allow dynamic linking for __imp_glfw*
+    LDLIBS  += -lraylib -lglfw3 -lopengl32 -lgdi32 -lwinmm -lcomdlg32 -lole32 -lpthread
 else
-    # POSIX (Linux/macOS) with raylib from system
+    # POSIX (Linux/macOS) with system raylib
     CFLAGS  += -pthread
     LDLIBS  += -lraylib -lpthread
 endif
