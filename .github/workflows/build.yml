@@ -1,44 +1,47 @@
-# Compiler (can be overridden by environment)
-CC ?= gcc
+name: Bitcamp Windows CI (Raylib)
 
-# Base compiler flags
-CFLAGS += -Wall -Wextra -O2 -std=c11
-LDFLAGS +=
-LDLIBS  += -lm
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
 
-# Platform-specific configurations
-ifeq ($(OS),Windows_NT)
-    # Windows + Raylib
-    CFLAGS  += -I/mingw64/include -pthread
-    
-    # Force fully static executable
-    LDFLAGS += -static -static-libgcc -static-libstdc++
-    
-    # Link Raylib and Windows system libraries statically
-    LDLIBS  += -Wl,-Bstatic -lraylib -lpthread \
-               -Wl,-Bdynamic -lgdi32 -lwinmm -lopengl32 -lcomdlg32 -lole32
-else
-    # POSIX (Linux/macOS) fallback
-    CFLAGS  += -pthread
-    LDLIBS  += -lpthread -lm
-endif
+jobs:
+  build-windows:
+    name: Build on Windows with Raylib
+    runs-on: windows-latest
 
-# Object files
-OBJS = bitcamp_core.o sha256.o sha256t.o platform.o miner.o ui.o
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-# Default target
-all: bitcamp
+      - name: Set up MSYS2 (MINGW64)
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            base-devel
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-raylib
+            curl
 
-# Link the final executable
-bitcamp: $(OBJS)
-	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
+      - name: Download Raygui
+        shell: msys2 {0}
+        run: |
+          curl -O https://raw.githubusercontent.com/raysan5/raygui/master/src/raygui.h
 
-# Compile object files
-%.o: %.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+      - name: Build with MinGW64 + Raylib
+        shell: msys2 {0}
+        env:
+          CFLAGS: "-I/mingw64/include -pthread"
+          LDFLAGS: "-L/mingw64/lib -static -static-libgcc -static-libstdc++"
+        run: |
+          make
 
-# Clean up build artifacts
-clean:
-	rm -f *.o bitcamp bitcamp.exe
-
-.PHONY: all clean
+      - name: Upload Windows binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: bitcamp-windows-x64
+          path: ./bitcamp.exe
