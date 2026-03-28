@@ -4,7 +4,11 @@
 #include <string.h>
 #include <stdio.h>
 #include <pthread.h>
-#include <curses.h>     // PDCurses on Windows
+#ifdef _WIN32
+  #include <pdcurses.h>   // use MSYS2-installed wrapper header
+#else
+  #include <ncurses.h>    // Linux/macOS
+#endif
 
 bc_chain g_chain;
 atomic_int g_mining = 0;
