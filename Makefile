@@ -12,11 +12,14 @@ ifeq ($(OS),Windows_NT)
     # Add -pthread for the miner thread
     CFLAGS  += -I/mingw64/include -I/mingw64/include/pdcurses -pthread
     
-    # Force fully static executable so it runs anywhere without DLLs
+    # Force fully static executable so it runs anywhere without MinGW DLLs
     LDFLAGS += -static -static-libgcc -static-libstdc++
     
-    # Link pdcurses and pthread statically
-    LDLIBS  += -Wl,-Bstatic -lpdcurses -lpthread
+    # 1. Link pdcurses and pthread statically
+    # 2. Switch back to dynamic linking for the core Windows system libraries 
+    #    (GDI32 for graphics/text, ComDlg32 for fonts, WinMM for sounds)
+    LDLIBS  += -Wl,-Bstatic -lpdcurses -lpthread \
+               -Wl,-Bdynamic -lgdi32 -lcomdlg32 -lwinmm
 else
     # POSIX (Linux/macOS) with ncurses + pthread
     CFLAGS  += -pthread
