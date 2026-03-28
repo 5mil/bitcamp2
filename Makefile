@@ -1,30 +1,44 @@
 # Compiler (can be overridden by environment)
 CC ?= gcc
 
-# Base flags (we append to these from the workflow env)
+# Base compiler flags
 CFLAGS += -Wall -Wextra -O2 -std=c11
 LDFLAGS +=
 LDLIBS  += -lm
 
-# Platform‑specific bits
+# Platform-specific configurations
 ifeq ($(OS),Windows_NT)
-    # Windows + PDCurses (via MSYS2 mingw-w64-x86_64-pdcurses)
+    # Windows + PDCurses (via MSYS2)
+    # Include headers
     CFLAGS  += -I/mingw64/include -I/mingw64/include/pdcurses
-    LDLIBS  += -lpdcurses
-
+    
+    # Force fully static executable so it runs anywhere without DLLs
+    LDFLAGS += -static -static-libgcc -static-libstdc++
+    
+    # Link pdcurses statically
+    LDLIBS  += -Wl,-Bstatic -lpdcurses
+else
+    # POSIX (Linux/macOS) with ncurses + pthread
+    CFLAGS  += -pthread
+    LDLIBS  += -lpthread -lncurses
 endif
 
+# Object files
 OBJS = bitcamp_core.o sha256.o sha256t.o platform.o miner.o ui.o
 
+# Default target
 all: bitcamp
 
+# Link the final executable
 bitcamp: $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS) $(LDLIBS)
 
+# Compile object files
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
+# Clean up build artifacts
 clean:
-	rm -f *.o bitcamp
+	rm -f *.o bitcamp bitcamp.exe
 
 .PHONY: all clean
